@@ -5,5 +5,6 @@ docker run --rm \
     --memory 32m \
     --cpus 1 \
     -v "$(pwd)/user_submission.py:/app/user_submission.py:ro" \
+    --env-file .env \
     hap-ctf \
     user_submission.py

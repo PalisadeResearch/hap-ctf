@@ -3,3 +3,4 @@
 /.direnv/
 .ninja_log
 /build/
+.env

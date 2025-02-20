@@ -122,7 +122,17 @@
                 "getrandom",
                 "sysinfo",
                 "exit_group",
-                "pread64"
+                "pread64",
+                "set_tid_address",
+                "readv",
+                "epoll_create1",
+                "membarrier",
+                "clock_getres",
+                "sched_getaffinity",
+                "vfork",
+                "dup2",
+                "writev",
+                "epoll_pwait"
             ],
             "action": "SCMP_ACT_ALLOW",
             "args": [],
