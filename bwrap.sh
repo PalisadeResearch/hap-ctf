@@ -1,4 +1,5 @@
 #!/bin/sh
+prlimit --as=67108864 --data=67108864 --stack=8388608
 bwrap --ro-bind /usr /usr \
       --ro-bind /lib /lib \
       --ro-bind /lib64 /lib64 \
