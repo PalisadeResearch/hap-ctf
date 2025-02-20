@@ -7,6 +7,7 @@
         "editorconfig.editorconfig",
         "timonwong.shellcheck",
         "melak47.ninja-syntax",
-        "ms-vscode.cpptools-extension-pack"
+        "ms-vscode.cpptools-extension-pack",
+        "ms-azuretools.vscode-docker"
     ]
 }

@@ -6,6 +6,11 @@ rule uv_sync
 rule exec
   command = ./$in
 
+rule docker_build
+  command = docker build -t hap-ctf .
+
 build .venv: uv_sync
 
-build test: exec docker.sh
+build docker: docker_build
+
+build test: exec docker.sh | docker
