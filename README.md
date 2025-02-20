@@ -1,5 +1,6 @@
 # hap-ctf
 
 ```
-./bwrap.sh
+direnv allow
+ninja
 ```

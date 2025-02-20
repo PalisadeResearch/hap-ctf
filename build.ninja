@@ -3,21 +3,9 @@ cflags = -Wall
 rule uv_sync
   command = uv sync --all-extras --dev
 
-rule cc
-  command = gcc $cflags -c $in -o $out
-
-rule link
-  command = gcc $in -o $out -lseccomp
-
 rule exec
-  command = chmod +x $in && ./$in
+  command = ./$in
 
 build .venv: uv_sync
 
-build build/gen-seccomp.o: cc gen-seccomp.c
-
-build build/gen-seccomp: link build/gen-seccomp.o
-
-build build/seccomp.bpf: exec build/gen-seccomp
-
-build test: exec bwrap.sh | build/seccomp.bpf
+build test: exec docker.sh
