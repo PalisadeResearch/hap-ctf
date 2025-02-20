@@ -8,4 +8,5 @@ bwrap --ro-bind /usr /usr \
       --die-with-parent \
       --new-session \
       --ro-bind . /app \
+      --seccomp 3 3<build/seccomp.bpf \
       python3 /app/user_submission.py

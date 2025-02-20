@@ -6,6 +6,7 @@
         "mkhl.direnv",
         "editorconfig.editorconfig",
         "timonwong.shellcheck",
-        "melak47.ninja-syntax"
+        "melak47.ninja-syntax",
+        "ms-vscode.cpptools-extension-pack"
     ]
 }
