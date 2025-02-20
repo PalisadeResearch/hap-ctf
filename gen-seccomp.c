@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     if (ctx == NULL)
         goto out;
 
-    /* Essential syscalls for program execution */
+    // python interpreter launch
     ALLOW_RULE(read);
     ALLOW_RULE(write);
     ALLOW_RULE(close);
@@ -57,12 +57,28 @@ int main(int argc, char *argv[])
     ALLOW_RULE(rseq);
     ALLOW_RULE(wait4);
     ALLOW_RULE(execve);
+    // print('Hello world')
     ALLOW_RULE(prlimit64);
     ALLOW_RULE(getrandom);
     ALLOW_RULE(gettid);
     ALLOW_RULE(readlink);
     ALLOW_RULE(getdents64);
     ALLOW_RULE(lseek);
+    // requests.get('google.com')
+    ALLOW_RULE(socket);
+    ALLOW_RULE(bind);
+    ALLOW_RULE(connect);
+    ALLOW_RULE(sendto);
+    ALLOW_RULE(recvfrom);
+    ALLOW_RULE(sendmsg);
+    ALLOW_RULE(sendmmsg);
+    ALLOW_RULE(recvmsg);
+    ALLOW_RULE(getsockname);
+    ALLOW_RULE(getpeername);
+    ALLOW_RULE(getsockopt);
+    ALLOW_RULE(setsockopt);
+    ALLOW_RULE(poll);
+    ALLOW_RULE(epoll_create1);
     
     /* Export the filter */
     filter_fd = open("build/seccomp.bpf", O_CREAT | O_WRONLY, 0644);
