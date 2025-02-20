@@ -1,28 +1,4 @@
 rule uv_sync
   command = uv sync --all-extras --dev
 
-rule figure
-  command = python3 $in $out
-
-rule latexmk
-  command = latexmk -pdf -interaction=nonstopmode -silent -output-directory=paper-latex $in
-  description = Building $out with latexmk
-
-rule typst_compile
-  command = typst compile $in $out
-
 build .venv: uv_sync
-
-build paper-latex/hello.pdf: figure src/hello.py | .venv
-
-build paper-typst/hello.svg: figure src/hello.py | .venv
-
-build figures: phony paper-latex/hello.pdf paper-typst/hello.svg
-
-build paper-latex/main.pdf: latexmk paper-latex/main.tex | figures
-
-build paper-typst/main.pdf: typst_compile paper-typst/main.typ | figures
-
-build paper: phony paper-latex/main.pdf paper-typst/main.pdf
-
-default paper
