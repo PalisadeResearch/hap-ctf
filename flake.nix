@@ -96,6 +96,15 @@
         };
       };
 
+      docker = pkgs.dockerTools.buildLayeredImage {
+        name = "hap-ctf";
+        config = {
+          Cmd = [
+            "${venv}/bin/api"
+          ];
+        };
+      };
+
       devShells.x86_64-linux = {
         default =
           let
