@@ -1,7 +1,6 @@
 import importlib.abc
 import importlib.util
 import io
-import os
 import sys
 import zipfile
 
@@ -115,19 +114,6 @@ def setup_seccomp():
     filter.load()
 
 
-def drop_privileges():
-    """Drop privileges by setting uid/gid to nobody."""
-    nobody_uid = 65534
-    nobody_gid = 65534
-
-    os.setgroups([])
-    os.setgid(nobody_gid)
-    os.setuid(nobody_uid)
-
-    if os.getuid() != nobody_uid or os.getgid() != nobody_gid:
-        raise RuntimeError("Failed to drop privileges")
-
-
 def load_zip_to_memory(zip_path):
     """Load all Python files from zip into memory."""
     modules = {}
@@ -153,9 +139,6 @@ def run_sandboxed_code(zip_path, package_name="untrusted"):
     """Run untrusted code in a sandboxed environment."""
     # Load zip contents into memory first
     modules = load_zip_to_memory(zip_path)
-
-    # Drop privileges
-    # drop_privileges()
 
     # Set up seccomp filter
     setup_seccomp()
