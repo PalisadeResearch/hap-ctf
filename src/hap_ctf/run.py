@@ -51,7 +51,7 @@ class MemoryFinder(importlib.abc.MetaPathFinder):
 
 def setup_seccomp():
     """Set up a restrictive seccomp filter that only allows necessary syscalls."""
-    filter = seccomp.SyscallFilter(seccomp.KILL_PROCESS)
+    filter = seccomp.SyscallFilter(seccomp.ERRNO(1))
     syscalls = [
         "access",
         "arch_prctl",
@@ -61,7 +61,6 @@ def setup_seccomp():
         "epoll_create1",
         "epoll_ctl",
         "epoll_wait",
-        "execve",
         "exit_group",
         "fcntl",
         "fstat",
@@ -89,7 +88,6 @@ def setup_seccomp():
         "rt_sigaction",
         "rt_sigprocmask",
         "sched_getaffinity",
-        "seccomp",
         "set_robust_list",
         "set_tid_address",
         "socketpair",
@@ -98,7 +96,6 @@ def setup_seccomp():
         "pipe2",
         "dup2",
         "exit",
-        "wait4",
         "sendto",
         "recvfrom",
         "socket",
@@ -108,7 +105,6 @@ def setup_seccomp():
         "getpeername",
         "sendmmsg",
         "madvise",
-        "vfork",
         "close_range",
         "poll",
         "bind",
