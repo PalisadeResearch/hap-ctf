@@ -5,12 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.115.8",
     "openai>=1.63.2",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.34.0",
 ]
 
 [project.scripts]
 run = "hap_ctf:run"
 generate_policy = "hap_ctf:generate_policy"
+api = "hap_ctf:api"
 
 [tool.pyright]
 # disable pyright in favor of ruff

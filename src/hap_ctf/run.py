@@ -114,32 +114,25 @@ def setup_seccomp():
     filter.load()
 
 
-def load_zip_to_memory(zip_path):
+def load_zip_to_memory(zip_ref: zipfile.ZipFile):
     """Load all Python files from zip into memory."""
     modules = {}
 
-    with open(zip_path, "rb") as f:
-        zip_data = io.BytesIO(f.read())
+    # Verify __init__.py exists
+    if "__init__.py" not in zip_ref.namelist():
+        raise ValueError("__init__.py not found in zip file")
 
-    with zipfile.ZipFile(zip_data) as zip_ref:
-        # Verify __init__.py exists
-        if "__init__.py" not in zip_ref.namelist():
-            raise ValueError("__init__.py not found in zip file")
-
-        # Load all Python files
-        for filename in zip_ref.namelist():
-            if filename.endswith(".py"):
-                source_code = zip_ref.read(filename).decode("utf-8")
-                modules[filename] = source_code
+    # Load all Python files
+    for filename in zip_ref.namelist():
+        if filename.endswith(".py"):
+            source_code = zip_ref.read(filename).decode("utf-8")
+            modules[filename] = source_code
 
     return modules
 
 
-def run_sandboxed_code(zip_path, package_name="untrusted"):
+def run_sandboxed_code(modules: dict, package_name="untrusted"):
     """Run untrusted code in a sandboxed environment."""
-    # Load zip contents into memory first
-    modules = load_zip_to_memory(zip_path)
-
     # Set up seccomp filter
     setup_seccomp()
 
@@ -167,7 +160,13 @@ def main():
         print("Usage: python sandbox.py <path_to_zip>")
         sys.exit(1)
 
-    result = run_sandboxed_code(sys.argv[1])
+    with open(sys.argv[1], "rb") as f:
+        zip_data = io.BytesIO(f.read())
+
+    with zipfile.ZipFile(zip_data) as zip_ref:
+        modules = load_zip_to_memory(zip_ref)
+
+    result = run_sandboxed_code(modules)
     print(f"Result: {result}")
 
 
