@@ -4,6 +4,7 @@ import io
 import sys
 import zipfile
 
+import pyprctl
 import seccomp
 
 
@@ -124,6 +125,7 @@ def setup_seccomp():
         filter.add_rule(seccomp.ERRNO(1), syscall)
 
     filter.load()
+    pyprctl.set_no_new_privs()
 
 
 def load_zip_to_memory(zip_ref: zipfile.ZipFile):
