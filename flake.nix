@@ -110,7 +110,7 @@
                       root = old.src;
                       fileset = lib.fileset.unions [
                         (old.src + "/pyproject.toml")
-                        (old.src + "/src/hap_ctf/__init__.py")
+                        (lib.fileset.fileFilter (file: file.hasExt "py") (old.src + "/src"))
                       ];
                     };
 
