@@ -1,5 +1,5 @@
 [project]
-name = "template"
+name = "hap_ctf"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,6 +7,9 @@ requires-python = ">=3.13"
 dependencies = [
     "openai>=1.63.2",
 ]
+
+[project.scripts]
+hap_ctf = "hap_ctf:main"
 
 [tool.pyright]
 # disable pyright in favor of ruff

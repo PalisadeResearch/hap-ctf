@@ -1,16 +1,4 @@
-cflags = -Wall
+rule test
+  command = uv run hap_ctf
 
-rule uv_sync
-  command = uv sync --all-extras --dev
-
-rule exec
-  command = ./$in
-
-rule docker_build
-  command = docker build -t hap-ctf .
-
-build .venv: uv_sync
-
-build docker: docker_build
-
-build test: exec docker.sh | docker
+build test: test

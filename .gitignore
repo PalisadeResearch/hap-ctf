@@ -4,3 +4,5 @@
 .ninja_log
 /build/
 .env
+result
+__pycache__
