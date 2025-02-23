@@ -136,6 +136,7 @@
               pkgs.nil
               pkgs.nixfmt-rfc-style
               pkgs.ninja
+              pkgs.entr
             ];
 
             env = {

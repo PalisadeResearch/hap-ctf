@@ -1,4 +1,16 @@
-rule test
-  command = uv run hap_ctf
+rule submission
+  command = zip -j submission.zip src/submission/*
 
-build test: test
+rule test
+  command = uv run run submission.zip
+
+rule generate_policy
+  command = nix build && strace -f -o strace.log ./result/bin/run submission.zip && uv run generate_policy strace.log
+
+build submission: submission
+
+build test: test | submission
+
+build policy: generate_policy | submission
+
+default test

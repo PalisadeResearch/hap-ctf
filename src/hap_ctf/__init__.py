@@ -1,21 +1,7 @@
-import asyncio
+import hap_ctf.generate_policy as generate_policy_
+import hap_ctf.run as run_
 
-import seccomp
-from openai import AsyncOpenAI
+run = run_.main
+generate_policy = generate_policy_.main
 
-client = AsyncOpenAI()
-
-
-async def amain():
-    models = await client.models.list()
-    print(models.data[0].id)
-
-
-def main():
-    f = seccomp.SyscallFilter(seccomp.ALLOW)
-    f.load()
-    asyncio.run(amain())
-
-
-if __name__ == "__main__":
-    main()
+__all__ = ["run", "generate_policy"]

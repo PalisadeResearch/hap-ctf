@@ -6,3 +6,5 @@
 .env
 result
 __pycache__
+*.zip
+*.log

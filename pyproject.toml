@@ -9,7 +9,8 @@ dependencies = [
 ]
 
 [project.scripts]
-hap_ctf = "hap_ctf:main"
+run = "hap_ctf:run"
+generate_policy = "hap_ctf:generate_policy"
 
 [tool.pyright]
 # disable pyright in favor of ruff
