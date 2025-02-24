@@ -6,6 +6,7 @@ import zipfile
 
 import pyprctl
 import seccomp
+from loguru import logger
 
 
 class MemoryLoader(importlib.abc.Loader):
@@ -51,6 +52,7 @@ class MemoryFinder(importlib.abc.MetaPathFinder):
 
 def setup_seccomp():
     """Set up a restrictive seccomp filter that only allows necessary syscalls."""
+    logger.debug("Setting up seccomp filter with KILL_PROCESS action")
     filter = seccomp.SyscallFilter(seccomp.KILL_PROCESS)
     syscalls_allow = [
         "access",
@@ -112,6 +114,7 @@ def setup_seccomp():
         "recvmsg",
     ]
     for syscall in syscalls_allow:
+        logger.trace(f"Adding ALLOW rule for syscall: {syscall}")
         filter.add_rule(seccomp.ALLOW, syscall)
 
     syscalls_errno = [
@@ -124,21 +127,27 @@ def setup_seccomp():
     for syscall in syscalls_errno:
         filter.add_rule(seccomp.ERRNO(1), syscall)
 
+    logger.debug("Loading seccomp filter")
     filter.load()
+    logger.debug("Setting no_new_privs")
     pyprctl.set_no_new_privs()
+    logger.debug("Seccomp setup complete")
 
 
 def load_zip_to_memory(zip_ref: zipfile.ZipFile):
     """Load all Python files from zip into memory."""
+    logger.debug("Loading zip file contents into memory")
     modules = {}
 
     # Verify __init__.py exists
     if "__init__.py" not in zip_ref.namelist():
+        logger.error("__init__.py not found in zip file")
         raise ValueError("__init__.py not found in zip file")
 
     # Load all Python files
     for filename in zip_ref.namelist():
         if filename.endswith(".py"):
+            logger.debug(f"Loading {filename} from zip")
             source_code = zip_ref.read(filename).decode("utf-8")
             modules[filename] = source_code
 
@@ -147,25 +156,34 @@ def load_zip_to_memory(zip_ref: zipfile.ZipFile):
 
 def run_sandboxed_code(modules: dict, package_name="untrusted"):
     """Run untrusted code in a sandboxed environment."""
+    logger.info("Starting sandboxed code execution")
+
     # Set up seccomp filter
     setup_seccomp()
 
     # Set up the memory-based import system
+    logger.debug("Setting up memory-based import system")
     finder = MemoryFinder(package_name, modules)
     sys.meta_path.insert(0, finder)
 
     try:
         # Import the package
+        logger.debug(f"Importing package {package_name}")
         module = importlib.import_module(package_name)
 
         # Check for and call main()
         if not hasattr(module, "main"):
+            logger.error("No main() function found in __init__.py")
             raise ValueError("No main() function found in __init__.py")
+
+        logger.debug("Calling main() function")
         return module.main()
     except Exception as e:
-        return f"Error running sandboxed code: {str(e)}"
+        logger.exception(f"Error during sandboxed execution: {e}")
+        raise
     finally:
         # Clean up the import system
+        logger.debug("Cleaning up import system")
         sys.meta_path.remove(finder)
 
 

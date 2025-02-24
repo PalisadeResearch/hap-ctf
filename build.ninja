@@ -2,7 +2,7 @@ rule submission
   command = zip -j submission.zip src/submission/*
 
 rule test
-  command = uv run run submission.zip
+  command = pytest -v -m 'not slow'
 
 rule generate_policy
   command = nix build && strace -f -o strace.log ./result/bin/run submission.zip && uv run generate_policy strace.log

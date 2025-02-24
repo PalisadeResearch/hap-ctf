@@ -2,6 +2,7 @@
 *.sw?
 /.direnv/
 .ninja_log
+.ninja_lock
 /build/
 .env
 result

@@ -1,33 +1,33 @@
 import io
 import multiprocessing
 import zipfile
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from .run import load_zip_to_memory, run_sandboxed_code
 
-app = FastAPI()
-
 process_pool = None
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the process pool when the API starts."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for FastAPI application."""
+    # Initialize the process pool when the API starts
     global process_pool
-    process_pool = multiprocessing.Pool(
+    ctx = multiprocessing.get_context("spawn")
+    process_pool = ctx.Pool(
         processes=4,
         maxtasksperchild=1,  # only use each process once
     )
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up the process pool when the API shuts down."""
-    global process_pool
+    yield
+    # Clean up the process pool when the API shuts down
     process_pool.close()
     process_pool.join()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/run_code/")
@@ -55,8 +55,23 @@ async def run_code(file: UploadFile):
             raise HTTPException(
                 status_code=408, detail="Code execution timed out"
             ) from e
+        except Exception as e:
+            # Extract the actual error from the worker process
+            error_type = type(e).__name__
+            error_msg = str(e)
+            if "SyntaxError" in error_type:
+                error_detail = f"SyntaxError: {error_msg}"
+            elif "ValueError" in error_type and "No main() function found" in error_msg:
+                error_detail = "No main() function found in __init__.py"
+            else:
+                error_detail = f"{error_type}: {error_msg}"
+            raise HTTPException(status_code=500, detail=error_detail) from e
 
+    except zipfile.BadZipFile as e:
+        raise HTTPException(status_code=400, detail="Invalid zip file format") from e
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
