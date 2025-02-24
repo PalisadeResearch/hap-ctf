@@ -1,12 +1,15 @@
 import importlib.abc
 import importlib.util
 import io
+import resource  # Import the resource module
 import sys
 import zipfile
 
 import pyprctl
 import seccomp
 from loguru import logger
+
+from .config import get_settings
 
 
 class MemoryLoader(importlib.abc.Loader):
@@ -154,11 +157,29 @@ def load_zip_to_memory(zip_ref: zipfile.ZipFile):
     return modules
 
 
+def set_resource_limits():
+    """Sets resource limits for the process."""
+    # Get settings
+    settings = get_settings()
+
+    # Set CPU time limit (in seconds)
+    resource.setrlimit(
+        resource.RLIMIT_CPU, (settings.max_cpu_seconds, settings.max_cpu_seconds)
+    )
+    logger.debug(f"Set CPU time limit to {settings.max_cpu_seconds} seconds")
+
+    # Set virtual memory limit (in bytes)
+    resource.setrlimit(
+        resource.RLIMIT_AS, (settings.max_memory_bytes, settings.max_memory_bytes)
+    )
+    logger.debug(f"Set virtual memory limit to {settings.max_memory_bytes} bytes")
+
+
 def run_sandboxed_code(modules: dict, package_name="untrusted"):
     """Run untrusted code in a sandboxed environment."""
     logger.info("Starting sandboxed code execution")
 
-    # Set up seccomp filter
+    set_resource_limits()
     setup_seccomp()
 
     # Set up the memory-based import system

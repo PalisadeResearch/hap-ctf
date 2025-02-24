@@ -7,8 +7,8 @@ import pytest
 from fastapi.testclient import TestClient
 from memory_profiler import memory_usage
 
-from hap_ctf.api import app, get_settings
-from hap_ctf.config import Settings
+from hap_ctf.api import app
+from hap_ctf.config import Settings, get_settings
 
 
 @pytest.fixture

@@ -1,21 +1,14 @@
 import io
 import multiprocessing
 import zipfile
-from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from .config import Settings
+from .config import Settings, get_settings
 from .run import load_zip_to_memory, run_sandboxed_code
-
-
-@lru_cache
-def get_settings():
-    return Settings()
-
 
 app = FastAPI()
 
