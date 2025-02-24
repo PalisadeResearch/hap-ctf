@@ -17,6 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "httpx>=0.28.1",
+    "memory-profiler>=0.61.0",
     "pytest>=8.3.4",
 ]
 

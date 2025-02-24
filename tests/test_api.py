@@ -1,8 +1,11 @@
 import io
+import threading
+import time
 import zipfile
 
 import pytest
 from fastapi.testclient import TestClient
+from memory_profiler import memory_usage
 
 from hap_ctf.api import app, get_settings
 from hap_ctf.config import Settings
@@ -16,6 +19,46 @@ def test_client():
         yield client
 
     app.dependency_overrides = {}
+
+
+@pytest.fixture(autouse=True)
+def profile_memory(request, capsys):
+    """
+    Fixture that continuously measures memory usage during a test by sampling
+    every 0.1 seconds, then reports the maximum delta observed from the baseline.
+    """
+    mem_samples = []
+    stop_event = threading.Event()
+
+    def sample_memory():
+        # Continuously sample memory usage until stop_event is set.
+        while not stop_event.is_set():
+            current_usage = sum(
+                memory_usage(
+                    -1, multiprocess=True, include_children=True, interval=0.0
+                )[0]
+            )
+            mem_samples.append(current_usage)
+            time.sleep(0.1)  # Sample every 0.1 seconds.
+
+    # Record the baseline memory usage before starting the sampling thread.
+    baseline = sum(
+        memory_usage(-1, multiprocess=True, include_children=True, interval=0.0)[0]
+    )
+    thread = threading.Thread(target=sample_memory)
+    thread.start()
+
+    yield  # Run the actual test.
+
+    # Signal the sampling thread to stop and wait for it to finish.
+    stop_event.set()
+    thread.join()
+
+    # Determine the maximum memory usage observed during the test.
+    max_usage = max(mem_samples, default=baseline)
+    mem_delta = max_usage - baseline
+    with capsys.disabled():
+        print(f"\nPeak RAM usage: {mem_delta:.4f} MiB")
 
 
 def create_submission_zip(code: str) -> io.BytesIO:
