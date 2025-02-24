@@ -4,13 +4,18 @@ import zipfile
 import pytest
 from fastapi.testclient import TestClient
 
-from hap_ctf.api import app
+from hap_ctf.api import app, get_settings
+from hap_ctf.config import Settings
 
 
 @pytest.fixture
 def test_client():
+    app.dependency_overrides[get_settings] = lambda: Settings(process_timeout=1)
+
     with TestClient(app) as client:
         yield client
+
+    app.dependency_overrides = {}
 
 
 def create_submission_zip(code: str) -> io.BytesIO:
@@ -37,7 +42,6 @@ def main():
     assert response.json() == {"result": "Hello from test!"}
 
 
-@pytest.mark.slow
 def test_run_code_timeout(test_client):
     code = """
 import time

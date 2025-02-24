@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.115.8",
     "loguru>=0.7.3",
     "openai>=1.63.2",
+    "pydantic-settings>=2.8.0",
     "pyprctl>=0.1.3",
     "python-multipart>=0.0.20",
     "uvicorn>=0.34.0",
@@ -23,12 +24,6 @@ test = [
 run = "hap_ctf:run"
 generate_policy = "hap_ctf:generate_policy"
 api = "hap_ctf:api"
-
-[tool.pytest.ini_options]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "serial",
-]
 
 [tool.pyright]
 # disable pyright in favor of ruff

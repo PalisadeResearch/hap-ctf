@@ -1,11 +1,21 @@
 import io
 import multiprocessing
 import zipfile
+from functools import lru_cache
+from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from loguru import logger
 
+from .config import Settings
 from .run import load_zip_to_memory, run_sandboxed_code
+
+
+@lru_cache
+def get_settings():
+    return Settings()
+
 
 app = FastAPI()
 
@@ -20,7 +30,11 @@ def run_code_in_process(modules, result_queue):
 
 
 @app.post("/run_code/")
-async def run_code(file: UploadFile):
+async def run_code(
+    file: UploadFile, settings: Annotated[Settings, Depends(get_settings)]
+):
+    logger.debug(f"/run_code file: {file.filename}, settings: {settings}")
+
     if not file.filename.endswith(".zip"):
         raise HTTPException(status_code=400, detail="Only .zip files are allowed")
 
@@ -36,7 +50,7 @@ async def run_code(file: UploadFile):
         result_queue = ctx.Queue()
         process = ctx.Process(target=run_code_in_process, args=(modules, result_queue))
         process.start()
-        process.join(timeout=1)
+        process.join(timeout=settings.process_timeout)
 
         if process.is_alive():
             process.terminate()
