@@ -1,4 +1,5 @@
 import io
+import os
 import threading
 import time
 import zipfile
@@ -26,7 +27,13 @@ def profile_memory(request, capsys):
     """
     Fixture that continuously measures memory usage during a test by sampling
     every 0.1 seconds, then reports the maximum delta observed from the baseline.
+    Skips profiling in CI environments.
     """
+    # Skip memory profiling in CI environments
+    if os.environ.get("CI"):
+        yield
+        return
+
     mem_samples = []
     stop_event = threading.Event()
 
