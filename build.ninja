@@ -9,7 +9,7 @@ rule generate_policy
 
 build submission: submission
 
-build test: test | submission
+build test: test
 
 build policy: generate_policy | submission
 
