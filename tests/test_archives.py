@@ -1,17 +1,16 @@
-import os
 import glob
+import os
+
 import pytest
 from fastapi.testclient import TestClient
+
 from hap_ctf.api import app
-from hap_ctf.config import Settings, get_settings
 
 
 @pytest.fixture
 def test_client():
-    app.dependency_overrides[get_settings] = lambda: Settings(process_timeout=1)
     with TestClient(app) as client:
         yield client
-    app.dependency_overrides = {}
 
 
 @pytest.mark.parametrize(
