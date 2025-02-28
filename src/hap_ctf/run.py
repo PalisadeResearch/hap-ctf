@@ -1,10 +1,12 @@
 import importlib.abc
 import importlib.util
 import io
-import resource  # Import the resource module
+import resource
+import sqlite3
 import sys
 import zipfile
 
+import ahocorasick
 import pyprctl
 import seccomp
 from loguru import logger
@@ -175,6 +177,36 @@ def set_resource_limits():
     logger.debug(f"Set virtual memory limit to {settings.max_memory_bytes} bytes")
 
 
+# Helper to load flags from a SQLite DB
+def load_flags_from_db(db_path: str):
+    """Load flags (strings) from a SQLite DB, table 'flags' with column 'flag'."""
+    import os
+
+    if not os.path.exists(db_path):
+        logger.warning(f"Database file {db_path} not found; skipping flags.")
+        return []
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT flag FROM flags;")
+        rows = cursor.fetchall()
+    return [row[0] for row in rows]
+
+
+# Aho-Corasick to find how many distinct flags appear in text
+def find_flags_aho_corasick(flags, text):
+    """Use Aho-Corasick to find how many distinct flags from 'flags' appear in 'text'."""
+    if not flags or not text:
+        return 0
+    A = ahocorasick.Automaton()
+    for f in flags:
+        A.add_word(f, f)
+    A.make_automaton()
+    found = set()
+    for _, val in A.iter(text):
+        found.add(val)
+    return len(found)
+
+
 def run_sandboxed_code(modules: dict, package_name="untrusted"):
     """Run untrusted code in a sandboxed environment."""
     logger.info("Starting sandboxed code execution")
@@ -182,12 +214,23 @@ def run_sandboxed_code(modules: dict, package_name="untrusted"):
     set_resource_limits()
     setup_seccomp()
 
-    # Set up the memory-based import system
     logger.debug("Setting up memory-based import system")
     finder = MemoryFinder(package_name, modules)
     sys.meta_path.insert(0, finder)
 
+    # Prepare to capture stdout/stderr
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    stdout_buffer = io.StringIO()
+    stderr_buffer = io.StringIO()
+
+    user_result = None
+
     try:
+        # Redirect stdout/stderr so we can collect logs
+        sys.stdout = stdout_buffer
+        sys.stderr = stderr_buffer
+
         # Import the package
         logger.debug(f"Importing package {package_name}")
         module = importlib.import_module(package_name)
@@ -198,7 +241,8 @@ def run_sandboxed_code(modules: dict, package_name="untrusted"):
             raise ValueError("No main() function found in __init__.py")
 
         logger.debug("Calling main() function")
-        return module.main()
+        user_result = module.main()
+
     except Exception as e:
         logger.exception(f"Error during sandboxed execution: {e}")
         raise
@@ -206,6 +250,37 @@ def run_sandboxed_code(modules: dict, package_name="untrusted"):
         # Clean up the import system
         logger.debug("Cleaning up import system")
         sys.meta_path.remove(finder)
+
+        # Restore original stdout/stderr
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+
+    # Retrieve logs
+    output_stdout = stdout_buffer.getvalue()
+    output_stderr = stderr_buffer.getvalue()
+    combined_output = output_stdout + "\n" + output_stderr
+
+    # Load flags from DB and search them in combined_output
+    settings = get_settings()
+    db_path = (
+        settings.flags_db_path
+        if hasattr(settings, "flags_db_path")
+        else "/opt/flags.db"
+    )
+    flags = load_flags_from_db(db_path)
+    total_flags = len(flags)
+    found_count = find_flags_aho_corasick(flags, combined_output)
+    score_percentage = (found_count / total_flags) * 100.0 if total_flags else 0.0
+
+    # Return a dict
+    return {
+        "user_result": user_result,
+        # "stdout": output_stdout, # Uncomment if need logs
+        # "stderr": output_stderr, # Uncomment if need logs
+        "found_flags": found_count,
+        "total_flags": total_flags,
+        "score_percentage": score_percentage,
+    }
 
 
 def main():

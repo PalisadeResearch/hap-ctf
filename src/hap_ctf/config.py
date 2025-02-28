@@ -4,9 +4,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    process_timeout: int = 60
+    process_timeout: int = 300
     max_cpu_seconds: int = 60
     max_memory_bytes: int = 256 * 1024 * 1024
+    flags_db_path: str = "/opt/flags.db"
 
 
 @lru_cache
