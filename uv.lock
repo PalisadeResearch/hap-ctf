@@ -94,6 +94,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "loguru" },
     { name = "openai" },
+    { name = "pyahocorasick" },
     { name = "pydantic-settings" },
     { name = "pyprctl" },
     { name = "python-multipart" },
@@ -114,6 +115,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "memory-profiler", marker = "extra == 'test'", specifier = ">=0.61.0" },
     { name = "openai", specifier = ">=1.63.2" },
+    { name = "pyahocorasick", specifier = ">=2.1.0" },
     { name = "pydantic-settings", specifier = ">=2.8.0" },
     { name = "pyprctl", specifier = ">=0.1.3" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.4" },
@@ -267,6 +269,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/50/e6/eecf58810b9d12e6427369784efe814a1eec0f492084ce8eb8f4d89d6d61/psutil-7.0.0-cp37-abi3-win32.whl", hash = "sha256:ba3fcef7523064a6c9da440fc4d6bd07da93ac726b5733c29027d7dc95b39d99", size = 241053 },
     { url = "https://files.pythonhosted.org/packages/50/1b/6921afe68c74868b4c9fa424dad3be35b095e16687989ebbb50ce4fceb7c/psutil-7.0.0-cp37-abi3-win_amd64.whl", hash = "sha256:4cf3d4eb1aa9b348dec30105c55cd9b7d4629285735a102beb4441e38db90553", size = 244885 },
 ]
+
+[[package]]
+name = "pyahocorasick"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/06/2e/075c667c27ecf2c3ed6bf3c62649625cf1e7de7fd349f63b49b794460b71/pyahocorasick-2.1.0.tar.gz", hash = "sha256:4df4845c1149e9fa4aa33f0f0aa35f5a42957a43a3d6e447c9b44e679e2672ea", size = 103259 }
 
 [[package]]
 name = "pydantic"
