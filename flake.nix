@@ -63,6 +63,13 @@
             passthru = { };
           };
         };
+        pyahocorasick = _prev.pyahocorasick.overrideAttrs (old: {
+          nativeBuildInputs =
+            old.nativeBuildInputs
+            ++ _final.resolveBuildSystem ({
+              setuptools = [ ];
+            });
+        });
       };
 
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
