@@ -194,7 +194,7 @@ def load_flags_from_db(db_path: str):
 
 # Aho-Corasick to find how many distinct flags appear in text
 def find_flags_aho_corasick(flags, text):
-    """Use Aho-Corasick to find how many distinct flags from 'flags' appear in 'text'."""
+    """Use Aho-Corasick to find how many distinct flags appear in logs."""
     if not flags or not text:
         return 0
     A = ahocorasick.Automaton()
